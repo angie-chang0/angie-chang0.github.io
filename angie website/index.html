@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Angie Chang</title>
+  <script src="processing.js"></script>
+
+  <!-- Font Awesome CDN for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+  <style>
+     @font-face {
+      font-family: 'pixel';
+      src: url('LinePixel7-A6lD.ttf') format('truetype'); /* Adjust path if needed */
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background-color: black;
+    }
+    h1 {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-55%);
+      font-size: 120px;
+      letter-spacing: 7px;
+      color: white;
+      font-family: 'pixel';
+      text-shadow: 0px 0px 12px rgba(255, 255, 255, 0.7);
+      z-index: 10;
+      font-weight: normal; 
+    }
+    h2 {
+      position: absolute;
+      top: 190px;
+      left: 50%;
+      transform: translateX(-54%);
+      font-size: 30px;
+      color: white;
+      font-family: 'pixel';
+      text-shadow: 0px 0px 12px rgba(255, 255, 255, 0.7);
+      z-index: 10;
+      font-weight: normal; 
+      letter-spacing: 2px;
+    }
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+    .img3 {
+      width: 65px;
+      position: absolute;
+      top: 60px; /* Adjust based on desired position */
+      left: 48%;
+      transform: translateX(-59%);
+      z-index: 9; /* Place it behind interactive elements */
+    }
+
+    .buttons-container {
+      position: absolute;
+      top: 300px;
+      left: 50%;
+      transform: translateX(-52%);
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .buttons-container button {
+      width: 520px;
+      margin: 15px 120px;
+      padding: 30px;
+      font-size: 40px;
+      font-family: 'pixel';
+      letter-spacing: 5px;
+      cursor: pointer;
+      background-color: rgba(0, 0, 0, 0.5);
+      color: white;
+      border: 1px solid white;
+      text-align: center;
+      box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.2);
+      transition: background-color 0.3s ease;
+    }
+
+    .buttons-container button:hover {
+      background-color: rgba(0, 0, 0);
+    }
+
+    .icons-container {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      gap: 20px;
+      z-index: 10;
+    }
+
+    .icons-container i {
+      font-size: 30px;
+      color: white;
+      cursor: pointer;
+      transition: color 0.3s ease;
+    }
+
+    .icons-container i:hover {
+      color: rgba(255, 255, 255, 0.7);
+    }
+  </style>
+</head>
+<body>
+
+<h1>Angie Chang</h1>
+<h2>Creative Code | Software Development | Design</h2>
+
+<img src="https://f2.toyhou.se/file/f2-toyhou-se/thumbnails/59418311_pjz.gif" alt="Divider" class="img3">
+
+<!-- Icons on the top right -->
+<div class="icons-container">
+  <i class="fas fa-home"></i>
+  <i class="fas fa-user"></i>
+  <i class="fas fa-envelope"></i>
+  <i class="fas fa-cog"></i>
+</div>
+
+<div class="buttons-container">
+  <button>Experience</button>
+  <button>Projects</button>
+  <button onclick="window.location.href='about.html'">About</button> <!-- Link to About page -->
+</div>
+
+
+
+  <canvas id="mycanvas"></canvas>
+
+<script type="application/processing" data-processing-target="mycanvas">
+  int stemW = 10;
+  int minStemW = 9;
+  int stemLen = 700;
+  float noiseOffset = 0.01;
+  float scrollOffset = 0; // Used to move the tree upwards
+  int randSeed = random(10000, 99999);
+  float growthProgress = 0;
+  float growthSpeed = 0.005;
+  int maxBranches = 4;
+  float windStrength = 0.2;
+  float windFrequency = 0.02;
+  PImage noiseImage;
+  float glowRadius = 50; // Base size of the glow
+  float glowPulseSpeed = 0.1; // Speed of the pulsing effect
+  float pulseFactor = 0; // Factor to create the pulse effect
+
+  void setup() {
+    size(1920, 1080);
+    noStroke();
+    noiseImage = createNoiseFilter();
+  }
+
+  void draw() {
+    
+    pushMatrix();
+    drawGradient();
+
+    // Move the canvas upwards over time, simulating upward scrolling
+    translate(330, height); // Start at the bottom and move up over time
+    rotate(-PI / 2); // Keep the tree vertical
+
+    noiseOffset = 0.01;
+    randomSeed(randSeed);
+
+    drawStem();
+
+    scrollOffset -= 1; // Increase the offset, moving the tree upwards
+
+    growthProgress += growthSpeed * 0.9;
+    popMatrix();
+
+    image(noiseImage, 0, 0);
+    
+    noFill();
+    strokeWeight(2);
+  }
+
+  void drawStem() {
+    float stemY = 0;
+    float currentStemLen = growthProgress * stemLen;
+
+    for (int x = 0; x < currentStemLen; x++) {
+      float taperFactor = 9;
+      float stemWeight = map(sin(x * 0.05), -1, 1, taperFactor - 2, taperFactor);
+
+      float offsetY = map(noise(noiseOffset), 0, 1, -stemWeight / 4, stemWeight / 4);
+      float y1 = stemY + offsetY;
+      float y2 = stemY + stemWeight + offsetY;
+
+      strokeWeight(stemWeight);
+      stroke(255);
+      line(x, y1, x, y2);
+
+      noiseOffset += 0.02;
+
+      if (random(1) < 0.03 && x > stemLen * 0.2) {
+        float branchAngle = random(-PI / 3, PI / 3);
+        float branchLen = random(50, 150) * min(growthProgress, 1);
+        drawBranch(x, (y1 + y2) / 2, branchAngle, branchLen, stemWeight, 0);
+      }
+    }
+  }
+
+  void drawBranch(float x, float y, float angle, float length, float thickness, int depth) {
+    if (length < 10 || depth > maxBranches) return;
+
+    int steps = int(length / 10);
+    float prevX = x;
+    float prevY = y;
+    float noiseDetailOffset = random(1000);
+
+    color branchStartColor = color(230, 230, 230);
+    color branchEndColor = color(230, 230, 230);
+
+    for (int i = 0; i <= steps; i++) {
+      float t = i / float(steps);
+      float curLen = t * length;
+
+      float windEffect = sin((frameCount * windFrequency) + (x * 0.01)) * windStrength;
+      float offsetAngle = map(noise(noiseDetailOffset + t), 0, 1, -PI / 8, PI / 8) + windEffect;
+
+      float newX = x + cos(angle + offsetAngle) * curLen;
+      float newY = y + sin(angle + offsetAngle) * curLen;
+
+      float branchThickness = max(thickness * (1 - t) * 1.2, 2);
+      strokeWeight(branchThickness);
+
+      color branchColor = lerpColor(branchStartColor, branchEndColor, t);
+      stroke(branchColor);
+
+      line(prevX, prevY, newX, newY);
+
+      prevX = newX;
+      prevY = newY;
+    }
+
+    float newLen = length * random(0.6, 0.8);
+
+    if (random(1) < 0.5) {
+      drawBranch(prevX, prevY, angle + random(-PI / 6, PI / 6), newLen, thickness * 0.7, depth + 1);
+    }
+    if (random(1) < 0.5) {
+      drawBranch(prevX, prevY, angle - random(-PI / 6, PI / 6), newLen, thickness * 0.7, depth + 1);
+    }
+  }
+
+  void drawGradient() {
+    color startColor = color(0, 0, 0);
+    color endColor = color(0, 0, 0);
+
+    for (int y = 0; y < height; y++) {
+      float inter = map(y, 0, height, 0, 1);
+      color c = lerpColor(startColor, endColor, inter);
+      stroke(c);
+      line(0, y, width, y);
+    }
+  }
+
+  PImage createNoiseFilter() {
+    PImage img = createImage(width, height, ARGB);
+    img.loadPixels();
+    for (int i = 0; i < width * height; i++) {
+      float r = random(1);
+      int val = r > 0.5 ? color(255, 255, 255, 30) : color(0, 0, 0, 0);
+      img.pixels[i] = val;
+    }
+    img.updatePixels();
+    return img;
+  }
+
+</script>
+
+</body>
+</html>
